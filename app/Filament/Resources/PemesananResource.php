@@ -24,7 +24,14 @@ class PemesananResource extends Resource
     {
         return $form
             ->schema([
-                //
+                \Filament\Forms\Components\Select::make('status')
+                    ->label('Status')
+                    ->options([
+                        'Pending' => 'Pending',
+                        'Completed' => 'Completed',
+                        'Cancelled' => 'Cancelled',
+                    ])
+                    ->required(),
             ]);
     }
 
@@ -32,13 +39,45 @@ class PemesananResource extends Resource
     {
         return $table
             ->columns([
-                //
+            Tables\Columns\TextColumn::make('id')
+                ->label('ID_pemesanan'),
+            Tables\Columns\TextColumn::make('details')
+                ->label('Product')
+                ->html()
+                ->formatStateUsing(fn ($record) =>
+                    $record->details->map(function($detail) {
+                        $name = $detail->product ? $detail->product->name : '-';
+                        $qty = $detail->quantity;
+                        $price = 'Rp ' . number_format($detail->price, 0, ',', '.');
+                        return "{$name} (Qty: {$qty}, {$price})";
+                    })->implode('<br>')
+                ),
+            Tables\Columns\TextColumn::make('status')
+                ->label('Status'),
+            Tables\Columns\TextColumn::make('discount')
+                ->label('Diskon')
+                ->formatStateUsing(fn ($record) => $record->discount ? $record->discount . '%' : 'Tidak ada diskon'),
+            Tables\Columns\TextColumn::make('total')
+                ->label('Harga Total')
+                ->formatStateUsing(fn ($record) => 'Rp ' . number_format($record->total, 0, ',', '.')),
+            Tables\Columns\TextColumn::make('order_date')
+                ->label('Tanggal'),
+            Tables\Columns\TextColumn::make('user.name')
+                ->label('User'),
+            Tables\Columns\TextColumn::make('status')
+                ->label('Status')
+                ->color(fn (string $state): string => match ($state) {
+                    'Pending' => 'warning',
+                    'Completed' => 'success',
+                    'Cancelled' => 'danger',
+                }),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn ($record) => $record->status === 'Pending'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -61,5 +100,10 @@ class PemesananResource extends Resource
             // 'create' => Pages\CreatePemesanan::route('/create'),
             'edit' => Pages\EditPemesanan::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['details.product']);
     }
 }
