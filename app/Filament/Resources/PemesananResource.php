@@ -27,9 +27,9 @@ class PemesananResource extends Resource
                 \Filament\Forms\Components\Select::make('status')
                     ->label('Status')
                     ->options([
-                        'Pending' => 'Pending',
-                        'Completed' => 'Completed',
-                        'Cancelled' => 'Cancelled',
+                        'pending' => 'pending',
+                        'completed' => 'completed',
+                        'cancelled' => 'cancelled',
                     ])
                     ->required(),
             ]);
@@ -67,9 +67,9 @@ class PemesananResource extends Resource
             Tables\Columns\TextColumn::make('status')
                 ->label('Status')
                 ->color(fn (string $state): string => match ($state) {
-                    'Pending' => 'warning',
-                    'Completed' => 'success',
-                    'Cancelled' => 'danger',
+                    'pending' => 'warning',
+                    'completed' => 'success',
+                    'cancelled' => 'danger',
                 }),
             ])
             ->filters([
